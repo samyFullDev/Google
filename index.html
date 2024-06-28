@@ -176,7 +176,7 @@
         <div id="amountWonLabel"></div>
         <button id="playButton">Jouer</button>
         <div id="result" aria-live="polite"></div>
-        <div id="totalGains" aria-live="polite">Total Gagné : 0F</div>
+        <div id="totalGains" aria-live="polite">Total Gagné : 0$</div>
     </div>
 
     <div id="dialog">
@@ -195,7 +195,7 @@
             const withdrawButton = document.getElementById('withdrawButton');
             const amountWonLabel = document.getElementById('amountWonLabel');
 
-            const segments = [1, 200000, 800000, 300000, 500000, 500, 750000];
+            const segments = [10, 500, 850, 3000, 1000, 200, 700];
             let totalGains = 0;
             let hasPlayed = false;
 
@@ -218,12 +218,12 @@
                 wheel.style.transform = `rotate(${randomDegree}deg)`;
 
                 setTimeout(() => {
-                    resultDiv.textContent = `Vous avez gagné ${winningAmount}F!`;
+                    resultDiv.textContent = `Vous avez gagné ${winningAmount}$!`;
                     totalGains += winningAmount;
-                    totalGainsDiv.textContent = `Total Gagné : ${totalGains}F`;
+                    totalGainsDiv.textContent = `Total Gagné : ${totalGains}$`;
 
                     // Afficher la boîte de dialogue
-                    dialogMessage.textContent = `Félicitations! Vous avez gagné ${winningAmount}F!`;
+                    dialogMessage.textContent = `Félicitations! Vous avez gagné ${winningAmount}$!`;
                     dialog.style.display = 'block';
 
                     // Afficher le montant gagné sur la roue
@@ -237,7 +237,7 @@
 
             withdrawButton.addEventListener('click', () => {
                 dialog.style.display = 'none';
-                window.location.href = 'https://wa.me/18709230259?text=Je%20viens%20de%20gagner%20' + totalGains + 'F%20sur%20Lucky%20Draw!';
+                window.location.href = 'https://wa.me/18709230259?text=Je%20viens%20de%20gagner%20' + totalGains + '$%20sur%20Lucky%20Draw!';
             });
         });
     </script>
