@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Draw - Jouez Gratuitement et Gagnez !</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 80%;
+            max-width: 300px;
+            height: 300px;
+            margin: 0 auto;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 5px solid #ccc;
+            box-sizing: border-box;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: conic-gradient(
+                #4CAF50 0 14.28%, 
+                #FFEB3B 14.28% 28.56%, 
+                #2196F3 28.56% 42.84%, 
+                #FF5722 42.84% 57.12%, 
+                #9C27B0 57.12% 71.4%, 
+                #FF9800 71.4% 85.68%, 
+                #F44336 85.68% 100%
+            );
+            transition: transform 3s ease-out;
+        }
+
+        .wheel:before {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #000;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .marker {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 20px solid #000; 
+        }
+
+        .segment-label {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            top: 25%;
+            left: 25%;
+            transform-origin: 50% 50%;
+            font-size: 14px;
+            color: white;
+            text-shadow: 1px 1px 2px #000;
+            font-weight: bold;
+            text-align: center;
+            line-height: 50px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: green;
+        }
+
+        #totalGains {
+            margin-top: 20px;
+            font-size: 18px;
+            color: blue;
+        }
+
+        #dialog {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        #dialog button {
+            margin-top: 10px;
+        }
+
+        #amountWonLabel {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            color: blue;
+            display: none;
+        }
+
+        /* Media Queries for responsiveness */
+        @media (max-width: 600px) {
+            .container {
+                margin-top: 20px;
+            }
+
+            .wheel-container {
+                width: 90%;
+                max-width: 250px;
+                height: 250px;
+            }
+
+            button {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+
+            #result, #totalGains {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>26e anniversaire de Google - Jouez Gratuitement et Gagnez !</h1>
+        <div class="wheel-container" role="img" aria-label="Roue de la fortune">
+            <div id="wheel" class="wheel">
+                <div class="segment-label" style="transform: rotate(7.14deg) translate(0, -130px);"></div>
+                <div class="segment-label" style="transform: rotate(21.42deg) translate(0, -130px);"></div>
+                <div class="segment-label" style="transform: rotate(35.70deg) translate(0, -130px);"></div>
+                <div class="segment-label" style="transform: rotate(49.98deg) translate(0, -130px);"></div>
+                <div class="segment-label" style="transform: rotate(64.26deg) translate(0, -130px);"></div>
+                <div class="segment-label" style="transform: rotate(78.54deg) translate(0, -130px);"></div>
+                <div class="segment-label" style="transform: rotate(92.82deg) translate(0, -130px);"></div>
+            </div>
+            <div class="marker"></div>
+        </div>
+        <div id="amountWonLabel"></div>
+        <button id="playButton">Jouer</button>
+        <div id="result" aria-live="polite"></div>
+        <div id="totalGains" aria-live="polite">Total Gagné : 0F</div>
+    </div>
+
+    <div id="dialog">
+        <p id="dialogMessage"></p>
+        <button id="withdrawButton">Retirer</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const playButton = document.getElementById('playButton');
+            const wheel = document.getElementById('wheel');
+            const resultDiv = document.getElementById('result');
+            const totalGainsDiv = document.getElementById('totalGains');
+            const dialog = document.getElementById('dialog');
+            const dialogMessage = document.getElementById('dialogMessage');
+            const withdrawButton = document.getElementById('withdrawButton');
+            const amountWonLabel = document.getElementById('amountWonLabel');
+
+            const segments = [1, 200000, 800000, 300000, 500000, 500, 750000];
+            let totalGains = 0;
+            let hasPlayed = false;
+
+            playButton.addEventListener('click', playGame);
+            playButton.addEventListener('touchend', playGame); // Ajouter support tactile
+
+            function playGame(event) {
+                event.preventDefault(); // Empêcher les événements de clic par défaut sur les appareils tactiles
+                if (hasPlayed) {
+                    alert("Vous n'avez droit qu'à un seul tour.");
+                    return;
+                }
+
+                const randomIndex = Math.floor(Math.random() * segments.length);
+                const winningAmount = segments[randomIndex];
+                
+                // Simuler la rotation de la roue
+                wheel.style.transition = 'transform 3s ease-out';
+                const randomDegree = (Math.random() * 360) + (360 * 3); // Rotation aléatoire
+                wheel.style.transform = `rotate(${randomDegree}deg)`;
+
+                setTimeout(() => {
+                    resultDiv.textContent = `Vous avez gagné ${winningAmount}F!`;
+                    totalGains += winningAmount;
+                    totalGainsDiv.textContent = `Total Gagné : ${totalGains}F`;
+
+                    // Afficher la boîte de dialogue
+                    dialogMessage.textContent = `Félicitations! Vous avez gagné ${winningAmount}F!`;
+                    dialog.style.display = 'block';
+
+                    // Afficher le montant gagné sur la roue
+                    amountWonLabel.textContent = `${winningAmount}F`;
+                    amountWonLabel.style.display = 'block';
+                }, 3000);
+
+                hasPlayed = true;
+                playButton.style.display = 'none'; // Masquer le bouton "Jouer"
+            }
+
+            withdrawButton.addEventListener('click', () => {
+                dialog.style.display = 'none';
+                window.location.href = 'https://wa.me/18709230259?text=Je%20viens%20de%20gagner%20' + totalGains + 'F%20sur%20Lucky%20Draw!';
+            });
+        });
+    </script>
+</body>
+</html>
